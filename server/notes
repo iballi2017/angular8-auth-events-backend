@@ -1,0 +1,475 @@
+1. create a folder "server"
+2. navigate into server folder
+3. npm init
+4. npm install express body-parser --save
+5. Create a new file "server.js"
+6. Inside server.js, require the package installed and the port number
+
+        const express = require('express');
+        const bodyParser = require('body-parser');
+        const PORT = 3000;
+
+7. Create an istance of "express"
+        const app = express();
+
+8. Specify body-parser to handle json data
+        app.use(bodyParser.json())
+
+9. Test a "GET" request and listen to the request on the port
+
+        app.get('/', function(req, res){
+            res.send("Hello from the server!")
+        });
+
+        app.listen(PORT, function(){
+            sonsole.log('Server running on locahost "+ PORT)
+        })
+
+10. In the console run "node server"
+
+>>>>>>>>>>>>>>>>>>> Server running on localhost: 3000 <<<<<<<<<<<<<<<<<<
+
+
+
+
+SECTION 1: SEPARATING THE CODES AS GOOD PRACTICE
+
+            --------------In api.js
+            1. Within the server folder, create a new folder called "routes"
+            2. Inside the routes, create a file called "api.js"
+            3. In app.js, make a simple "get" request
+
+                            const express = require('express');
+                            const router = express.Router()
+
+
+                            router.get('/', (req, res)=>{
+                                res.send('From API route');
+                            })
+
+                            module.exports = router
+
+
+            --------------In server.js 
+            1. Require the api route 
+                            const api = require('./routes/api')
+
+            2. Consume the api after the body-parser
+                            app.use('/api', api)
+
+
+
+SECTION 2: SET UP DATABASE
+1. Set up "MongoDB"
+2. Install "Mongoose", a npm package that is required to interact with MongoDB and provide MongoDB object mapping, i.e, it translates the data in the database
+to javascript objects
+                npm install mongoose --save
+
+
+SECTION 3: MODELS
+            1. Create a folder called "models"
+            2. Create a file called "user.js"
+            3. In the user.js file require 'mongoose'
+                        const mongoose = require('mongoose')
+            4. Get an instance of the mongoose schema 
+                        const Schema = mongoose.Schema
+            5. Create a new schema for the user data in MongoDB
+                        const userSchema = new Schema({
+                            email: string,
+                            password: string
+                        }) 
+            6. Create a module for the Schema and export it
+                        module.exports = mongoose.model('user', userSchema, 'users')
+                        note:   "user" is the module name;
+                                "users" is the database collection name
+
+
+SECTION 4. CONNECTING WITH THE DATABASE IN THE api.js file
+            1. require mongoose at the top
+                        const mongoose = require('mongoose')
+
+            2. declare the connection string to the database
+                        db = "mongodb+srv://<username>:<password>@food-api-6whdd.mongodb.net/test?retryWrites=true&w=majority"
+
+            3. replacen the username and password of the connection string with the database information
+                        db = 'mongodb+srv://node-shop:Swordfish01@iballidb-nxfdz.mongodb.net/test?retryWrites=true'
+
+            4. connect db with the database like below;
+                        mongoose.connect(db, err => {
+                            if(err){
+                                console.log('Error!' + err)
+                            }else{
+                                console.log('Connected to MongoDB!')
+                            }
+                        }
+                        ,
+                        { useNewUrlParser: true }
+                        );
+
+            5. save and run
+
+            6. 'Connected to MongoDB!' should appear on the console if the connection is successful
+
+
+SECTION 5. POST RESQUEST TO THE DATABASE (register a user)
+
+
+            1. Import the user model from model/user.js
+                                const User = require('../models/user.js')
+
+            2. Create the post method          
+                ******          router.post('/register', (req, res)=>{
+
+                                })
+
+            3. Extract the body of the request by assigning a variable for it      
+                                router.post('/register', (req, res)=>{
+                ******              let userData = req.body
+                                })
+
+            4. Pass in a new user data 
+                                router.post('/register', (req, res)=>{
+                                    let userData = req.body
+                ******              let user = new User(userData)     
+                                })
+
+            5. Enable data to be saved in the database
+                                router.post('/register', (req, res)=>{
+                                    let userData = req.body
+                                    let user = new User(userData)
+                ******              user.save()
+                
+                                })
+
+            6. Pass in the conditions to save data
+                                router.post('/register', (req, res)=>{
+                                    let userData = req.body
+                                    let user = new User(userData)
+                ******              user.save((error, registeredUser) => {
+                                        if(error){
+                                            console.log(error)
+                                        }else{
+                                            res.status(200).send(registeredUser)
+                                        }
+                                    })
+                
+                                })
+
+            7. Test with "Postman"
+
+
+SECTION 6: POST REQUEST FROM THE DATABASE (login a user)
+
+            1. Create the post method         
+                ******          app.get('/register', (req, res)=>{
+
+                                })
+
+            2. Extract the body of the request by assigning a variable for it      
+                                router.post('/register', (req, res)=>{
+                ******              let userData = req.body
+                                })
+            
+            3. Check if email address exist in the database already i.e find one user that have the same email address   
+                                router.post('/register', (req, res)=>{
+                                    let userData = req.body
+
+                ******              User.FindOne(
+                                        {email = userData.email}, (error, user) => {
+                                            if(error){
+                                                console.log(error)
+                                            } else{
+                                                if(!user){
+                                                    res.status(401).send('Invalid email!')
+                                                }else if(user.password == userData.password){
+                                                    res.status(401).send('Invalid password!')
+                                                }else {
+                                                    res.status(200).send(user)
+                                                }
+                                            }
+                                        }
+                                    )
+                                })
+
+
+
+
+
+SECTION 7: EVENTS
+
+   Instead of depending on MongoDB, we'll be creating api method with hard-coded events.
+   Because we are only focusing on login authentication in this project.
+
+   router.get('/events', (req, res) =>{
+       let events = [
+           {
+               "id": "1",
+               "name": "Auto Expo",
+               "description": "Lorem Ipsum",
+               "date": "2012-04-20T27:25:43:511Z"
+           },
+           {
+               "id": "2",
+               "name": "Ent Lotus",
+               "description": "Ipsum Lorem",
+               "date": "2012-04-23T18:45:43:511Z"
+           },
+           {
+               "id": "3",
+               "name": "Chemical Digress",
+               "description": "Dpff Fyus",
+               "date": "2012-04-13T05:05:43:511Z"
+           },
+           {
+               "id": "4",
+               "name": "Science Display",
+               "description": "Jukry Latex",
+               "date": "2012-04-10T16:00:43:511Z"
+           }
+       ]
+       res.json(events)
+   })
+
+   note: The route block above contains an array of events with properties "id", "name", "description" and "date"
+   , and the event is returned as the response
+
+
+
+Similarly, we create a "specialevents" api like below. We'll copy and paste events and rername "events" to "special"
+
+   router.get('/special', (req, res) =>{
+       let events = [
+           {
+               "id": "1",
+               "name": "Auto Expo",
+               "description": "Lorem Ipsum",
+               "date": "2012-04-20T27:25:43:511Z"
+           },
+           {
+               "id": "2",
+               "name": "Ent Lotus",
+               "description": "Ipsum Lorem",
+               "date": "2012-04-23T18:45:43:511Z"
+           },
+           {
+               "id": "3",
+               "name": "Chemical Digress",
+               "description": "Dpff Fyus",
+               "date": "2012-04-13T05:05:43:511Z"
+           },
+           {
+               "id": "4",
+               "name": "Science Display",
+               "description": "Jukry Latex",
+               "date": "2012-04-10T16:00:43:511Z"
+           }
+       ]
+       res.json(events)
+   })
+
+
+
+
+SECTION 7: Handling CORS Errors
+
+   This api backend server works nicely. But it cannot connect with our Angular frontend framework because of difference in port number.
+   To correct that;
+
+   1. Install cors
+            npm install cors --save
+    2. After installation, open server.js file, and require "cors" like below
+            const cors = require('cors')
+    3. Just below the instance of express() before the use of body-parser, "use" cors() method
+            
+                const app = express()
+    ****        app.use(cors())
+                app.use(bodyParser.json())
+
+
+                
+
+        PART TWO
+
+SECTION 1: USING JWT FOR AUTHENTICATION
+        step 1: Navigate into the server folder and install JWT
+                    npm install jsonwebtoken --save
+        step 2: after installation is complete, open the api.js file and import(require) JWT
+                    const jwt = require('jsonwebtoken')
+        step 3: generate the token in the 'register' api
+                    a. create "payload" in the else-block like below
+                    
+                            router.post('/register', (req, res)=>{
+                                let userData = req.body
+                                let user = new User(userData)
+                                user.save((error, registeredUser) => {
+                                    if(error){
+                                        console.log(error)
+                                    }else{
+****                                    let payload = {
+                                            subject: registeredUser._id
+                                        }
+                                        res.status(200).send(registeredUser)
+                                        console.log(registeredUser)
+                                    }
+                                })
+                            })
+
+
+                    b. sign a "token" and generate it like below
+                    
+                            router.post('/register', (req, res)=>{
+                                let userData = req.body
+                                let user = new User(userData)
+                                user.save((error, registeredUser) => {
+                                    if(error){
+                                        console.log(error)
+                                    }else{
+                                        let payload = {
+                                            subject: registeredUser._id
+                                        }
+****                                    let token = jwt.sign(payload, 'mySecretKey')
+                                        res.status(200).send(registeredUser)
+                                        console.log(registeredUser)
+                                    }
+                                })
+                            })
+
+
+                    c. send the token as an object, instead of the "registeredUser" that we've been sending before, like below
+                    
+                            router.post('/register', (req, res)=>{
+                                let userData = req.body
+                                let user = new User(userData)
+                                user.save((error, registeredUser) => {
+                                    if(error){
+                                        console.log(error)
+                                    }else{
+                                        let payload = {
+                                            subject: registeredUser._id
+                                        }
+                                        let token = jwt.sign(payload, 'mySecretKey')
+****                                    res.status(200).send({token})
+                                        console.log(registeredUser)
+                                    }
+                                })
+                            })
+
+
+        step 3: replicate the token process in the 'login' api
+
+                    a. create "payload" in the else-block like below
+                    
+                            router.post('/login', (req, res) => {
+                                let userData = req.body
+
+                                User.findOne(
+                                    { email: userData.email }, (error, user) => {
+                                        if (error) {
+                                            console.log(error)
+                                        } else {
+                                            if (!user) {
+                                                res.status(401).send('Invalid email!')
+                                            } else if (user.password !== userData.password) {
+                                                res.status(401).send('Invalid password!')
+                                            } else {
+****                                    let payload = {
+                                            subject: user._id
+                                        }
+                                                res.status(200).send(user)
+                                            }
+                                        }
+                                    }
+                                )
+                            })
+
+
+                    b. sign a "token" and generate it like below
+                    
+                            router.post('/login', (req, res) => {
+                                let userData = req.body
+
+                                User.findOne(
+                                    { email: userData.email }, (error, user) => {
+                                        if (error) {
+                                            console.log(error)
+                                        } else {
+                                            if (!user) {
+                                                res.status(401).send('Invalid email!')
+                                            } else if (user.password !== userData.password) {
+                                                res.status(401).send('Invalid password!')
+                                            } else {
+                                        let payload = {
+                                            subject: user._id
+                                        }
+****                                    let token = jwt.sign(payload, 'mySecretKey')
+                                                res.status(200).send(user)
+                                            }
+                                        }
+                                    }
+                                )
+                            })
+
+
+                    c. send the token as an object, instead of the "user" that we've been sending before, like below
+                    
+                            router.post('/login', (req, res) => {
+                                let userData = req.body
+
+                                User.findOne(
+                                    { email: userData.email }, (error, user) => {
+                                        if (error) {
+                                            console.log(error)
+                                        } else {
+                                            if (!user) {
+                                                res.status(401).send('Invalid email!')
+                                            }   else if (user.password !== userData.password) {
+                                                    res.status(401).send('Invalid password!')
+                                                }   else {
+                                                        let payload = {
+                                                            subject: user._id
+                                                        }
+                                                        let token = jwt.sign(payload, 'mySecretKey')
+****                                                    res.status(200).send({token})
+                                                    }
+                                        }
+                                    }
+                                )
+                            })
+
+
+                            
+
+TO VERIFY JSON WEBTOKEN USING MIDDLEWARE 
+
+    What is a middleware?
+        This is nothing but a function that gets executed before the user defined handler is executed
+
+        step 1: navigate into api.js file and create verifyToken() function
+
+                        verifyToken(req, res, next){ }
+
+        step 2: within the function, the first check we make is weither the authorization key is not present as part of the header
+
+                        function verifyToken(req, res, next){
+                            if(!req.headers.authorization){
+                                res.status(401).send('Unauthorized request')
+                            }
+                        }
+
+        step 3: then we check if the authorization key is present as part of the header
+
+                        function verifyToken(req, res, next){
+                            if(!req.headers.authorization){
+                                res.status(401).send('Unauthorized request')
+                            }
+                            let token = req.headers.authorization.split(' ')[1]
+                            if (token === 'null'){
+                                res.status(401).send('Unauthorized request')
+                            }
+                            let payload = jwt.verify(token, 'mySecretKey')
+                            if(!payload){
+                                res.status(401).send('Unauthorized request')
+                            }
+                            req.userId = payload.subject
+                            next()
+                        }
