@@ -270,7 +270,7 @@ Similarly, we create a "specialevents" api like below. We'll copy and paste even
 
 
 
-SECTION 7: Handling CORS Errors
+SECTION 8: Handling CORS Errors
 
    This api backend server works nicely. But it cannot connect with our Angular frontend framework because of difference in port number.
    To correct that;
@@ -355,7 +355,7 @@ SECTION 1: USING JWT FOR AUTHENTICATION
                             })
 
 
-        step 3: replicate the token process in the 'login' api
+        step 4: replicate the token process in the 'login' api
 
                     a. create "payload" in the else-block like below
                     
